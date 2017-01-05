@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>任务8_html+css实现栅格布局</title>
+	<style type="text/css">
+	.container{
+		width: 100%;
+		max-width: 1000px;
+		padding: 10px;
+	}
+	.container [class*="col-"]{
+		float: left;
+		box-sizing: border-box;
+		padding: 10px;
+	}
+
+	.container [class*="col-"] p{
+		background-color: #eee;
+		height: 60px;
+		border: 1px solid #999;
+		margin: 0;
+		vertical-align: center;
+		color: red;
+	}
+
+	.container .row:before,
+	.container .row:after{
+		content: "";
+		clear: both;
+		display: table;
+	}
+
+	.col-1{width: 8.33%}
+	.col-2{width: 16.6%} 
+	.col-3{width: 25%}
+	.col-4{width: 33.3%}
+	.col-6{width: 50%}
+
+
+    @media all and (max-width:768px){
+		.col-1{width: 16.6%}
+		.col-2{width: 25%}
+		.col-3{width: 25%}
+		.col-4{width: 50%}
+		.col-6{width: 50%}
+
+		.row .col-4:last-of-type{
+			width: 100%;
+		}
+		.row .col-2:nth-child(3){
+			width: 66.6%;
+		}
+
+		.row .col-6:nth-child(5){
+			width: 25%;
+		}
+
+    }
+
+   
+		
+	</style>
+</head>
+<body>
+	<div class="container outline">
+        <div class="row">
+            <div class="col-4"><p>p-content</p></div> 
+            <div class="col-4"><p>p-content</p></div> 
+            <div class="col-4"><p>p-content</p></div>
+        </div> 
+        <div class="row">
+            <div class="col-3"><p>p-content</p></div> 
+            <div class="col-6"><p>p-content</p></div> 
+            <div class="col-3"><p>p-content</p></div> 
+        </div> 
+        <div class="row">
+            <div class="col-1"><p>p-content</p></div> 
+            <div class="col-1"><p>p-content</p></div> 
+            <div class="col-2"><p>p-content</p></div> 
+            <div class="col-2"><p>p-content</p></div> 
+            <div class="col-6"><p>p-content</p></div>  
+        </div> 
+    </div>
+
+<hr/>
+</body>
+</html>

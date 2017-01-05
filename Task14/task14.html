@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>IFE JavaScript Task 01</title>
+  </head>
+<body>
+
+  <h3>污染城市列表</h3>
+  <ul id="aqi-list">
+  </ul>
+
+<script type="text/javascript">
+
+var aqiData = [
+  ["北京", 90],
+  ["上海", 50],
+  ["福州", 10],
+  ["广州", 50],
+  ["成都", 90],
+  ["西安", 100]
+];
+
+(function () {
+
+  /*
+  在注释下方编写代码
+  遍历读取aqiData中各个城市的数据
+  将空气质量指数大于60的城市显示到aqi-list的列表中
+  */
+  //获取页面相关DOM
+  var ulElem = document.getElementById("aqi-list");
+  //创建文档仓库暂存文档节点，减少浏览器频繁的DOM渲染
+  var elemsFragment = document.createDocumentFragment();
+
+  var li = null, i = 0;
+
+  //对二维数组进行排序：
+  sort(aqiData);
+  while(aqiData[i][1] > 60){
+	li = document.createElement("li");
+	li.appendChild(document.createTextNode("第"+(i+1)+"名:   "+aqiData[i][0]+"   aqi:"+aqiData[i][1]));
+	elemsFragment.appendChild(li);
+	i++;
+  }
+  //将中间仓库添加到页面DOM
+  ulElem.appendChild(elemsFragment);
+
+})();
+
+//使用优化版冒泡对不变数组进行排序
+function sort(arr) {
+	var temp = [];
+	var a = arr.length, flag = a;
+	while(flag > 0){
+		a = flag;
+		flag = 0;
+		for (var i = 1; i < a; i++) {
+			if(arr[i][1]>arr[i-1][1]){
+				temp = arr[i];
+				arr[i] = arr[i-1];
+				arr[i-1] = temp;
+				flag = i;
+			}
+		}
+	}
+	for (var i = 0; i < arr.length; i++) {
+		console.log(arr[i]);
+	}
+}
+
+</script>
+</body>
+</html>

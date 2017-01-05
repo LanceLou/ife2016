@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>IFE-JS-Task09</title>
+	<meta charset="utf-8">
+	<style>
+		.block-wrapper{
+			margin-top: 10px;
+		}
+		.tagshow{
+			margin-top: 20px;
+			height: 100px;
+		}
+		.tagshow span{
+			padding: 10px;
+			display: inline-block;
+			background-color: #04b2d9;
+			color: #fff;
+			margin: 5px;
+			cursor: pointer;
+			letter-spacing: 2px;
+		}
+		.fav-wrapper{
+			margin-top: 20px;
+		}
+		.fav-wrapper span{
+			padding: 10px;
+			display: inline-block;
+			background-color: #f7b158;
+			color: #fff;
+			margin: 5px;
+			cursor: pointer;
+			letter-spacing: 2px;	
+		}
+		span i{
+			background-color: #0092c7;
+		}
+	</style>
+</head>
+<body>
+	tages：<input type="text" id="tag">
+	<div class="tagshow" id="tagshow"></div>
+	<textarea name="fav" id="textIn" cols="20" rows="6"></textarea>
+	<input type="button" id="fav-add" value="添加兴趣">
+	<div class="fav-wrapper" id="fav-wrapper"></div>
+	<script type="text/javascript">
+	/*个人感觉的缺陷之处，未使用事件监听机制*/
+		$ = function (el) { return document.querySelector(el); };
+	    $$ = function (el) { return document.querySelectorAll(el); };
+		if (!String.prototype.trim) {
+		  String.prototype.trim = function () {
+		    return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+		  };
+		}
+		function BlockOperate() {
+			this.tags = [];
+			this.tagsMark = {}; //记录tags中重复出现的项
+			this.favMark = {};
+			this.favs = [];
+			this.tagsWrapper = null;
+			this.favsWrapper = null;
+			this.tagInput = null;
+		}
+		BlockOperate.prototype = {
+			constructor: BlockOperate,
+			initDomEle: function () {
+				this.tagsWrapper = document.getElementById("tagshow");
+				this.favsWrapper = document.getElementById("fav-wrapper");
+				this.tagInput = document.getElementById("tag");
+			},
+			getFav: function () {
+				var textIn = document.getElementById("textIn"); 
+				var value = textIn.value;
+				textIn.value = "";
+				var reg = /^[\w\u4E00-\u9FA5]*$/g;
+				var inArr = value.split(/[\n\t\s,:、]/g);  //用户输入的数组，及更具相关要求进行分块
+				for (var i = 0; i < inArr.length; i++) {
+					if (!inArr[i].match(reg) || this.favMark[inArr[i]]) {
+						inArr.splice(i,1);  //删除不和规则的元素
+						i--;
+					}else{
+						inArr[i] = inArr[i].trim();
+					}
+				}
+				return inArr;
+			},
+			tagsAddAndRender: function (self) {  /*标签添加与渲染*/
+				return function (event) {
+					var keycode = event.keyCode;
+					var sapn = null;
+					if (keycode != "188" && keycode != "13" && keycode != "32") {
+						return;
+					}
+					var value = self.tagInput.value;
+					value = keycode == "13" ? value : value.substring(0,value.length-1);
+					self.tagInput.value = "";
+					if (self.tagsMark[value]) {
+						return;
+					}
+					if (self.tags.length === 10) {
+						var firstC = self.tagsWrapper.firstElementChild;
+						self.tags.shift();
+						self.blockDelete(firstC);
+						delete self.tagsMark[firstC.innerText];
+					}
+					self.tagsMark[value] = 1;
+					span = document.createElement("span");
+					span.innerText = value;
+					EventUtil.addHandler(span,"mouseenter",function () {
+						this.style.backgroundColor = "#ff6a5c";
+						this.innerText = "点击删除"+this.innerText;
+					});
+					EventUtil.addHandler(span,"mouseout",function () {
+						var text = this.innerText;
+						this.style.backgroundColor = "#04b2d9";
+						this.innerText = text.substring(4,text.length);
+					});
+					self.tagsWrapper.appendChild(span);
+					self.tags.push(value);
+				}
+			},
+			favAddAndRender: function (self) {   /*兴趣爱好方块添加*/
+				return function () {
+					var inArr = self.getFav();
+					var deleteNum = self.favs.length - 10 + inArr.length;
+					var favsWrapper = self.favsWrapper;
+					var span = null;
+					var docFragment = document.createDocumentFragment();
+					if (deleteNum >0) {
+						for (var i = 0; i < deleteNum; i++) {
+							var firstC = favsWrapper.firstElementChild;
+							self.blockDelete(firstC);
+							self.favs.shift();
+							delete self.favMark[firstC.innerText];
+						}
+					}
+					for (var i = 0; i < inArr.length; i++) {
+						span = document.createElement("span");
+						span.innerText = inArr[i];
+						self.favs.push(inArr[i]);
+						self.favMark[inArr[i]] = 1;
+						docFragment.appendChild(span);						
+					}
+					favsWrapper.appendChild(docFragment);
+				}
+			},
+			blockDelete: function (targetNode) {  /*对象   需要被删除的目标节点   以及其下标*/
+				targetNode.parentElement.removeChild(targetNode);
+			},
+			blockSelfClickDelete: function (self) {
+				return function (event) {
+					var targetNode = event.target;
+					if (targetNode.nodeName === "SPAN") {
+						var text = targetNode.innerText;
+						var index = [].indexOf.call(targetNode.parentNode.childNodes, targetNode);
+						self.tags.splice(index,1);
+						delete self.tagsMark[text.substring(4,text.length)];
+						self.blockDelete(targetNode);
+					}
+				}
+			},
+			initButtonEvent: function () {
+				var favAddBtn = document.getElementById("fav-add");
+				EventUtil.addHandler(this.tagInput,"keyup",this.tagsAddAndRender(this));
+				EventUtil.addHandler(this.tagsWrapper,"click",this.blockSelfClickDelete(this));
+				EventUtil.addHandler(favAddBtn,"click",this.favAddAndRender(this));
+			},
+			init: function () {
+				this.initDomEle();
+				this.initButtonEvent();
+			}
+		};
+		var EventUtil = {
+		  addHandler: function (element, type, handler) {
+		    if(element.addEventListener){
+		      element.addEventListener(type,handler,false);
+		    }else if(element.attachEvent){
+		      element.attachEvent("on"+type, handler);
+		    }else{
+		      element["on"+type] = handler;
+		    }
+		  },
+		  removeHandler: function (element,type,handler) {
+		    if (element.removeEventListener) {
+		      element.removeEventListener(type,handler,false);
+		    } else if (element.detachEvent) {
+		      element.detachEvent("on"+type,handler);
+		    } else {
+		      element["on"+type] = null;
+		    }
+		  }
+		}
+		var bo = new BlockOperate();
+		bo.init();
+	</script>
+</body>
+</html>
