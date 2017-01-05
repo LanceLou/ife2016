@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>IFE JS-Task06</title>
+	<meta charset="utf-8">
+	<style>
+		.block-wrapper{
+			margin-top: 10px;
+		}
+		span{
+			padding: 10px;
+			display: inline-block;
+			background-color: red;
+			color: #fff;
+			margin: 5px;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+	<input type="text" id="num-input">
+	<input type="button" value="左侧入" id="left-in">
+	<input type="button" value="右侧入" id="right-in">
+	<input type="button" value="左侧出" id="left-out">
+	<input type="button" value="右侧出" id="right-out"><br>
+	<div class="block-wrapper" id="block-wrapper"></div>
+	<script>
+		var inputEle = null;
+		var blocksWrapper = null;
+		function initDomEle(){
+			inputEle = document.getElementById("num-input");
+			blocksWrapper = document.getElementById("block-wrapper");
+		}
+		function getDate() {
+			var num;
+			var msg = inputEle.value;
+			num = Number.parseInt(msg)
+			if (num !== num) {
+				alert("请输入整数");
+				return false;
+			}
+			return num;
+		}
+		function inRender(flag) {
+			return function () {
+				var num;
+				var localBlocksWrapper = blocksWrapper;
+				if (!(num = getDate())) {
+					return;
+				}
+				//有第一个方块  ||  没有方块直接添加
+				var span = document.createElement("span");
+				span.innerText = num;
+				EventUtil.addHandler(span,"click",function(event) {
+					var target = event.target;
+					target.parentElement.removeChild(target);
+				})
+				if(!(localBlocksWrapper.firstChild)){
+					localBlocksWrapper.appendChild(span);
+					return;
+				}
+				//有子方块
+				if (flag) {   /*左边为true*/
+					localBlocksWrapper.insertBefore(span,localBlocksWrapper.firstChild);
+				}else{
+					localBlocksWrapper.insertBefore(span,null);
+				}	
+			}
+		}
+		function outRender(flag) {
+			return function () {
+				var num;
+				var localBlocksWrapper = blocksWrapper;
+				if (!(num = getDate())) {
+					return;
+				}
+
+				//有孩子
+				if(!(localBlocksWrapper.firstChild)){
+					return;
+				}
+				if (flag) {
+					localBlocksWrapper.removeChild(localBlocksWrapper.firstChild);
+				}else{
+					localBlocksWrapper.removeChild(localBlocksWrapper.lastChild);
+				}	
+			}
+		}
+		function initButtonEvent() {
+			var lefInBtn = document.getElementById("left-in");
+			var leftOutBtn = document.getElementById("left-out");
+			var rightInBtn = document.getElementById("right-in");
+			var rightOutBtn = document.getElementById("right-out");
+			EventUtil.addHandler(leftOutBtn,"click",outRender(true));
+			EventUtil.addHandler(lefInBtn,"click",inRender(true));
+			EventUtil.addHandler(rightOutBtn,"click",outRender(false));
+			EventUtil.addHandler(rightInBtn,"click",inRender(false));
+		}
+		var EventUtil = {
+		  addHandler: function (element, type, handler) {
+		    if(element.addEventListener){
+		      element.addEventListener(type,handler,false);
+		    }else if(element.attachEvent){
+		      element.attachEvent("on"+type, handler);
+		    }else{
+		      element["on"+type] = handler;
+		    }
+		  },
+		  removeHandler: function (element,type,handler) {
+		    if (element.removeEventListener) {
+		      element.removeEventListener(type,handler,false);
+		    } else if (element.detachEvent) {
+		      element.detachEvent("on"+type,handler);
+		    } else {
+		      element["on"+type] = null;
+		    }
+		  }
+		}
+		function init() {
+			initDomEle();
+			initButtonEvent();
+		}
+		init();
+	</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>IFE-Task 表单验证-1</title>
+	<meta charset="utf-8">
+	<style>
+		*{
+			padding: 0;
+			margin: 0;
+		}
+		.wrapper{
+			width: 700px;
+			height: 300px;
+			position: absolute;
+			top: 50%;
+			margin-top: -150px;
+			left: 50%;
+			margin-left: -350px;
+			text-align: center;
+			font-size: 1rem;
+			box-sizing: border-box;
+			padding-top: 50px;
+		}
+		.wrapper input[type="radio"]{
+			margin-right: 5px;
+		}
+		.wrapper input[type="radio"]:nth-of-type(2){
+			margin-left: 150px;
+			margin-bottom: 50px;
+		}
+		.wrapper .outSchoolPart{
+			display: none;
+		}
+		.wrapper span{
+			vertical-align: middle;
+		}
+		.wrapper select{
+		    width: 150px;
+		    -webkit-appearance: none;
+		    height: 26px;
+		    margin: 0 5px;
+		    padding-left: 5px;
+		    display: inline-block;
+		    background-color: transparent;
+		    background: url("images/upDown.png") no-repeat right;
+		}
+		.wrapper select:nth-of-type(2){
+			width: 250px;
+		}
+		.wrapper .outSchoolPart select{
+			margin-left: 10px;
+			width: 300px;
+		}
+	</style>
+</head>
+<body>
+	<article class="wrapper">
+		<input type="radio" name="stuKind" value="inSchoolPart" checked="true" ><span>在校生</span>
+		<input type="radio" name="stuKind" value="outSchoolPart"><span>非在校生</span>
+		<section class="inSchoolPart" id="inSchoolPart">
+			<span>学校：</span>
+			<select name="schoolArea" id="sa">
+				<option value="beijing">北京</option>
+				<option value="chengdu">成都</option>
+			</select>
+			<select name="schoolName" id="sn">
+				<option value="bjU">北京大学</option>
+				<option value="qhU">清华大学</option>
+			</select>
+		</section>
+		<section class="outSchoolPart" id="outSchoolPart">
+			<span>就业单位</span><select name="workUnitName" id="wUN">
+				<option value="baidu">百度</option>
+				<option value="ali">阿里</option>
+				<option value="tencent">腾讯</option>
+			</select>
+		</section>
+	</article>
+	<script type="text/javascript">
+		var radios = document.querySelectorAll("input[type='radio']");
+		var parts = document.getElementsByTagName("section");
+		var wrapper = document.querySelector(".wrapper");
+		var universitySelect = document.querySelector("#sn");
+		var checkedAim = "inSchoolPart";
+		var selectedCity = "beijing";
+		var citysUniversity = {
+			"beijing": {"bjU": "北京大学","qhU": "清华大学"},
+			"chengdu": {"bjU": "成都大学","qhU": "四川大学"},
+		}
+		var workUnit = {
+			"baidu": "百度",
+			"ali": "阿里",
+			"tencent": "腾讯"
+		}
+		//大学名称联动
+		function cascadeU(target) {
+			var city = target.options[target.selectedIndex].value;
+			var u = "";
+			if (city === selectedCity) {
+				return;
+			}
+			//不知道算不算hack的小伎俩额
+			universitySelect.options.length = 0;
+			for(u in citysUniversity[city]){
+				var option = document.createElement("option");
+				option.value = u;
+				option.text = citysUniversity[city][u];
+				universitySelect.appendChild(option);
+			}
+			selectedCity = city;
+		}
+		function radioCheckHandle(target) {
+			if (checkedAim === target.value) {
+				return;
+			}
+			var value = target.value;
+			parts[checkedAim].style.display = "none";
+			checkedAim = value;
+			parts[checkedAim].style.display = "block";
+		}
+		function initListener() {
+			wrapper.addEventListener("change",function (event) {
+				var target = event.target;
+				var type = target.type;
+				switch(type){
+					case "radio":
+						radioCheckHandle(target);
+						break;
+					case "select-one":
+						if (target.name === "schoolName") {
+							break;
+						}
+						cascadeU(target);
+						break;
+				}
+			});
+		}
+		function init() {
+			initListener();
+		}
+		init();
+	</script>
+</body>
+</html>

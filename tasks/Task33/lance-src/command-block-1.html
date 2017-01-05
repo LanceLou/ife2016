@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>BaiDu IFE JS-Task-33</title>
+	<meta charset="utf-8">
+	<style type="text/css">
+		*{
+			padding: 0;
+			margin: 0;
+		}
+		.wrapper{
+			display: inline-block;
+			width: 550px;
+			height: 550px;
+			position: relative;
+			box-sizing: border-box;
+			background-image: url(bgi.png);
+			background-repeat: no-repeat;
+		}
+		.block_border_wrapper{
+			width: 500px;
+			height: 500px;
+			position: absolute;
+			right: 0;
+			bottom: 0;
+			border: 1px solid #000;
+			box-sizing: border-box;
+		}
+		.block{
+			width: 50px;
+			height: 50px;
+			box-sizing: border-box;
+			position: absolute;
+			left: 0;
+			top: 0;
+			background-color: red;
+			transition: all 1s;
+		}
+		.block:before{
+			content: "";
+			display: block;
+			position: absolute;
+			width: 50px;
+			height: 18px;
+			background-color: blue;
+			top: 0;
+			left: 0;
+		}
+		input[type="text"]{
+			height: 26px;
+			width: 220px;
+			-webkit-appearance: none;
+			border: 1px solid #ccc;
+			border-radius: 3px;
+			vertical-align: text-bottom;
+		}
+		input[type="button"]{
+			-webkit-appearance: none;
+			height: 26px;	
+			width: 60px;
+			color: #fff;
+			background-color: green;
+			border: none;
+			border-radius: 4px;
+			outline: none;
+			vertical-align: text-bottom;
+		}
+	</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="block_border_wrapper">
+			<div class="block"></div>
+		</div>
+	</div>
+	<input type="text" id="command" placeholder="command please">
+	<input type="button" id="cmBtn" value="执行">
+	<script type="text/javascript">
+		//定义全局相关属性：
+		var curX = 0;
+		var curY = 0;
+		var TargetBlock = document.querySelector(".block");
+		//一数组方式记录当前方向，方便相关的方向变化
+		var curDeg = 0;
+
+		//direc与action合作，方便moveAction函数的相关操作
+		var direc = ["up","right","down","left"];
+		var action = {
+			"up" : {
+				"horizontal": 0,
+				"vertical": -50
+			},
+			"down" : {
+				"horizontal": 0,
+				"vertical": 50
+			},
+			"left" : {
+				"horizontal": -50,
+				"vertical": 0
+			},
+			"right" : {
+				"horizontal": 50,
+				"vertical": 0
+			}
+		}
+		function moveAction() {
+			//边界检查
+
+			//根据当前角度算出当前所处方向
+			/*
+				首先：  正如direc数组所描述   上右下左 分别对应  0123
+				相关思路分大于零和小于零的情况：
+					大于零时: 当前角度除以90在对4取摩
+					小于零时: 在大于零的相同运算之后加4即可   可用数轴进行求解
+			*/
+			var curDirec = curDeg > 0 ? (curDeg/90)%4 : (curDeg/90)%4+4;
+			var tempX = curX + action[direc[curDirec]]["horizontal"];
+			var tempY = curY + action[direc[curDirec]]["vertical"];
+
+			if (tempY<0 || tempY>450 || tempX<0 || tempX>450) {
+				return;
+			}
+			curX = tempX;
+			curY = tempY;
+			TargetBlock.style.left = tempX+"px";
+			TargetBlock.style.top = tempY+"px";
+		}
+		function rotateAction(deg) {
+			cacuDeg = curDeg + deg;
+			TargetBlock.style.transform = "rotate("+cacuDeg+"deg)";
+			curDeg = cacuDeg;
+		}
+		function commandHandler() {
+			var command;
+			if (!(command = getCommand())) {
+				return;
+			}
+			switch(command){
+				case "GO": 
+					moveAction();
+					break;
+				case "TUN LEF":
+					rotateAction(-90);
+					break;
+				case "TUN RIG":
+					rotateAction(90);
+					break;
+				case "TUN BAC":
+					rotateAction(180);
+					break;
+			}
+		}
+		function getCommand() {
+			var input = document.querySelector("#command");
+			return input.value;
+		}
+		function inintEventListener(){
+			var btn = document.querySelector("#cmBtn");
+			btn.addEventListener("click",commandHandler);
+		}
+		function init() {
+			inintEventListener();
+		}
+		init();
+	</script>
+</body>
+</html>

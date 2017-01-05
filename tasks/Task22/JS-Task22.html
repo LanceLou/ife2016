@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>JS-Task10</title>
+	<meta charset="utf-8">
+</head>
+<style>
+	*{
+		padding: 0;
+		margin: 0;
+	}
+	div{
+		box-sizing: border-box;
+		border: 1px solid #ccc;
+		background-color: #fff;
+		/*
+		#f28749
+		*/
+	}
+	.wrapper-level-1{
+		width: 820px;
+		height: 200px;
+		margin: 20px 0 0 40px;
+		margin-bottom: 10px;
+		display: flex;
+		justify-content: space-around;
+    	align-items: center;
+	}
+	.wrapper-level-2{
+		width: 380px;
+		height: 150px;
+		display: flex;
+		justify-content: space-around;
+    	align-items: center;
+	}
+	.wrapper-level-3{
+		width: 160px;
+		height: 120px;
+		display: flex;
+		justify-content: space-around;
+    	align-items: center;
+	}
+	.block{
+		width: 50px;
+		height: 100px;
+	}
+	input{
+		margin-right: 30px;
+	}
+	#DLR{
+		margin-left: 40px;
+	}
+</style>
+<body>
+	<div class="wrapper-level-1" id="topNode">
+		<div class="wrapper-level-2">
+			<div class="wrapper-level-3">
+				<div class="block"></div>
+				<div class="block"></div>
+			</div>
+			<div class="wrapper-level-3">
+				<div class="block"></div>
+				<div class="block"></div>
+			</div>	
+		</div>
+		<div class="wrapper-level-2">
+			<div class="wrapper-level-3">
+				<div class="block"></div>
+				<div class="block"></div>
+			</div>
+			<div class="wrapper-level-3">
+				<div class="block"></div>
+				<div class="block"></div>
+			</div>	
+		</div>
+	</div>
+	<input type="button" value="前序遍历" id="DLR">
+	<input type="button" value="中序遍历" id="LDR">
+	<input type="button" value="后序遍历" id="LRD">
+	<select name="sortRate" id="sortRate">
+		<option value="1000ms">1000ms</option>
+		<option value="500ms">500ms</option>
+		<option value="200ms">200ms</option>
+	</select>
+	<script type="text/javascript">
+		/*整体规划：先绑定  再遍历且后件渲染数组   再render
+		problems： 1：在监控选择框选择项发生变化是遇到较为棘手的问题
+				   2：在事件调用函数的递归处理时出现问题
+		*/
+		var interval = 1000;
+		var stack = []; /*咱们使用栈来模拟所谓的递归遍历*/
+		var renderArr = [];
+		var topNode = document.getElementById("topNode");
+		function btnEventBind() {
+			var dlrBtn = document.getElementById("DLR");
+			var ldrBtn = document.getElementById("LDR");
+			var lrdBtn = document.getElementById("LRD");
+			var rateSelect = document.getElementById("sortRate");
+			EventUtil.addHandler(rateSelect,"blur",function (event) {
+				var selectObj = event.target;
+				var text = selectObj.options[selectObj.selectedIndex].text;
+				if (interval+"" !== text) {
+					interval = parseInt(text);
+				}
+			});
+			EventUtil.addHandler(dlrBtn,"click",treeDLRTrave);
+			EventUtil.addHandler(ldrBtn,"click",treeLDRTrave);
+			EventUtil.addHandler(lrdBtn,"click",treeLRDTrave);
+		}
+		function treeDLRTrave() {   //先序遍历
+			renderArr = [];
+			var curNode = topNode;
+			var stackPoint = null;  //栈指针
+			stack.unshift(curNode); //根指针进栈
+			while(stack.length !== 0){
+				while(stackPoint = stack[0]){  /*左节点直至尽头*/
+					if (stackPoint) {
+						renderArr.push(stackPoint);
+					}
+					stack.unshift(stack[0].firstElementChild);
+				}
+				stack.shift(); /*空指针出栈*/
+				if (stack.length !== 0) {
+					stackPoint = stack.shift();
+					stack.unshift(stackPoint.lastElementChild);
+				}
+			}
+			renderChange();
+		}
+		function treeLDRTrave() {   //中序遍历
+			renderArr = [];
+			var curNode = topNode;
+			var stackPoint = null;  //栈指针
+			stack.unshift(curNode); //根指针进栈
+			while(stack.length !== 0){
+				while(stack[0]){  /*左节点直至尽头*/
+					stack.unshift(stack[0].firstElementChild);
+				}
+				stack.shift(); /*空指针出栈*/
+				if (stack.length !== 0) {
+					stackPoint = stack.shift();
+					renderArr.push(stackPoint);
+					stack.unshift(stackPoint.lastElementChild);
+				}
+			}
+			renderChange();
+		}
+		function treeLRDTrave() {  //后序遍历
+			renderArr = [];
+			var curNode = topNode;
+			var lastVisit = null;
+			var stackPoint = curNode;
+			while(stackPoint !== null || stack.length > 0){
+				while(stackPoint){
+					stack.unshift(stackPoint);
+					stackPoint = stack[0].firstElementChild;
+				}
+				stackPoint = stack[0];
+				if (stackPoint.lastElementChild == null || lastVisit == stackPoint.lastElementChild) {
+					renderArr.push(stackPoint);
+					stack.shift();
+					lastVisit = stackPoint;
+					stackPoint = null;
+				}else{
+					stackPoint = stackPoint.lastElementChild;
+				}
+			}
+			console.log(renderArr);
+			renderChange();
+		}
+		function renderChange() {
+			var lastRender = renderArr[0];
+			setTimeout(function () {
+				lastRender.style.backgroundColor = "#fff";
+				lastRender = renderArr.shift();
+				lastRender.style.backgroundColor = "#f28749";
+				if (renderArr[0]) {
+					setTimeout(arguments.callee,interval);
+				}else{
+					setTimeout(function () {
+						lastRender.style.backgroundColor = "#fff";
+					},interval);
+				}
+			},interval)
+		}
+		function init() {
+			btnEventBind();
+		}
+		var EventUtil = {
+		  addHandler: function (element, type, handler) {
+		    if(element.addEventListener){
+		      element.addEventListener(type,handler,false);
+		    }else if(element.attachEvent){
+		      element.attachEvent("on"+type, handler);
+		    }else{
+		      element["on"+type] = handler;
+		    }
+		  },
+		  removeHandler: function (element,type,handler) {
+		    if (element.removeEventListener) {
+		      element.removeEventListener(type,handler,false);
+		    } else if (element.detachEvent) {
+		      element.detachEvent("on"+type,handler);
+		    } else {
+		      element["on"+type] = null;
+		    }
+		  }
+		}
+		init();
+	</script>
+</body>
+</html>

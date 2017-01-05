@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>IFE_JS-Task07</title>
+	<meta charset="utf-8">
+	<style>
+		@keyframes lightShow{
+			form {
+				background-color: #fff;
+			}
+			to {
+				background-color: #f3b597;
+			}
+		}
+		.block-wrapper{
+			margin-top: 10px;
+			/*60*/
+			width: 960px;
+			height: 360px;
+			position: relative;
+			box-sizing: border-box;
+			border: 1px solid #ccc;
+			border-radius: 3px;
+			padding: 0 20px;
+			margin-top: 30px;
+			display: flex;
+			justify-content: center;
+		    align-items: flex-end;
+		}
+		/*
+			直接来说咋们设置flex的order得了
+		*/
+		span{
+			position: relative;
+			width: 10px;
+			left: 0;
+			display: inline-block;
+			background-color: #0092c7;
+			margin: 0 2.5px;
+			bottom: 0;
+			cursor: pointer;
+			transition-property: all;
+			transition-duration: 1s;
+		}
+		.block-light{
+			animation-name: lightShow;
+			animation-duration: 0.3s;
+			animation-iteration-count: 3;
+			animation-delay: 0;
+		}
+		#random{
+			color: red;
+		}
+		#start-sort{
+			color: blue;
+		}
+		input{
+			cursor: pointer;
+		}
+
+	</style>
+</head>
+<body>
+	<input type="text" id="num-input">
+	<input type="button" value="左侧入" id="left-in">
+	<input type="button" value="右侧入" id="right-in">
+	<input type="button" value="左侧出" id="left-out">
+	<input type="button" value="右侧出" id="right-out">
+	<input type="button" value="随机生成数组" id="random">
+	<input type="button" value="启动排序" id="start-sort"><br>
+	<div class="block-wrapper" id="block-wrapper"></div>
+	<script type="text/javascript">
+		var inputEle = null;
+		var blocksWrapper = null;
+		var blockArray = [];
+		var sortLock = false;
+		var snapShots = [];
+		function initDomEle(){
+			inputEle = document.getElementById("num-input");
+			blocksWrapper = document.getElementById("block-wrapper");
+		}
+		function getDate() {
+			var num;
+			var msg = inputEle.value;
+			num = Number.parseInt(msg)
+			if (num !== num || num < 10 || num > 100) {
+				alert("请输入合法数字");
+				return false;
+			}
+			return num;
+		}
+		function inRender(flag) {
+			if (sortLock) {
+				return;
+			}
+			return function () {
+				var num;
+				var localBlocksWrapper = blocksWrapper;
+				if (!(num = getDate())) {
+					return;
+				}
+				//有第一个方块  ||  没有方块直接添加
+				var span = document.createElement("span");
+				span.style.height = num*3+"px";
+
+				EventUtil.addHandler(span,"click",function(event) {
+					var target = event.target;
+					var spanEle = document.querySelectorAll("span");
+					for (var i = 0; i < spanEle.length; i++) {
+						if(spanEle[i] === target){
+							blockArray.splice(i,1);
+							break;
+						}
+					}
+					target.parentElement.removeChild(target);
+				})
+				if(!(localBlocksWrapper.firstChild)){
+					localBlocksWrapper.appendChild(span);
+					blockArray[0] = num;
+					return;
+				}
+				//有子方块
+				if (flag) {   /*左边为true*/
+					localBlocksWrapper.insertBefore(span,localBlocksWrapper.firstChild);
+					blockArray.unshift(num);
+				}else{
+					localBlocksWrapper.insertBefore(span,null);
+					blockArray.push(num);
+				}
+			}
+		}
+		function outRender(flag) {
+			if (sortLock) {
+				return;
+			}
+			return function () {
+				var localBlocksWrapper = blocksWrapper;
+				//有孩子
+				if(!(localBlocksWrapper.firstChild)){
+					return;
+				}
+				if (flag) {
+					localBlocksWrapper.removeChild(localBlocksWrapper.firstChild);
+					blockArray.shift();
+				}else{
+					localBlocksWrapper.removeChild(localBlocksWrapper.lastChild);
+					blockArray.pop();
+				}
+			}
+		}
+		function initButtonEvent() {
+			var lefInBtn = document.getElementById("left-in");
+			var leftOutBtn = document.getElementById("left-out");
+			var rightInBtn = document.getElementById("right-in");
+			var rightOutBtn = document.getElementById("right-out");
+			var startSortBtn = document.getElementById("start-sort");
+			var randomBtn = document.getElementById("random");
+			/*给各自的按钮绑定事件啦*/
+			EventUtil.addHandler(leftOutBtn,"click",outRender(true));
+			EventUtil.addHandler(lefInBtn,"click",inRender(true));
+			EventUtil.addHandler(rightOutBtn,"click",outRender(false));
+			EventUtil.addHandler(rightInBtn,"click",inRender(false));
+			EventUtil.addHandler(startSortBtn,"click",sort);
+			EventUtil.addHandler(randomBtn,"click",randomArr);
+		}
+		var EventUtil = {
+		  addHandler: function (element, type, handler) {
+		    if(element.addEventListener){
+		      element.addEventListener(type,handler,false);
+		    }else if(element.attachEvent){
+		      element.attachEvent("on"+type, handler);
+		    }else{
+		      element["on"+type] = handler;
+		    }
+		  },
+		  removeHandler: function (element,type,handler) {
+		    if (element.removeEventListener) {
+		      element.removeEventListener(type,handler,false);
+		    } else if (element.detachEvent) {
+		      element.detachEvent("on"+type,handler);
+		    } else {
+		      element["on"+type] = null;
+		    }
+		  }
+		}
+		function randomArr() {
+			if (sortLock) {
+				return;
+			}
+			blocksWrapper.innerHTML = "";
+			for (var i = 0; i < 50; i++) {
+				blockArray[i] = Math.round(Math.random()*(90)+10);
+			}
+			var localBlockArray = blockArray;
+			var localBlocksWrapper = blocksWrapper;
+			//有第一个方块  ||  没有方块直接添加
+			for (var i = 0; i < localBlockArray.length; i++) {
+				var span = document.createElement("span");
+				span.style.height = blockArray[i]*3+"px";
+
+				EventUtil.addHandler(span,"click",function(event) {
+					var target = event.target;
+					var spanEle = document.querySelectorAll("span");
+					for (var i = 0; i < spanEle.length; i++) {
+						if(spanEle[i] === target){
+							blockArray.splice(i,1);
+							break;
+						}
+					}
+					target.parentElement.removeChild(target);
+				});
+				localBlocksWrapper.appendChild(span);	
+			}
+		}
+		function sort() {
+			if (sortLock) {
+				return;
+			}
+			sortLock = true;
+			var localBlockArray = blockArray;
+			var max = 0,
+				maxIndex = 0,
+				temp = 0;
+			for (var i = localBlockArray.length - 1; i >= 0; i--) {
+				
+				max = 0;
+				
+				for (var j = 0; j <= i; j++) {
+					if (max < localBlockArray[j]) {
+						max = localBlockArray[j];
+						maxIndex = j;
+					}
+				}
+				temp = localBlockArray[i];
+				localBlockArray[i] = localBlockArray[maxIndex];
+				localBlockArray[maxIndex] = temp;
+				snapShots.push({"from":maxIndex,"to":i});
+			}
+			paint();
+			
+
+		}
+		function pause(long) {
+			var date = new Date();
+			while(true){
+				var locdate = new Date();
+				if (locdate.valueOf() >= (date.valueOf()+long)) {
+					break;
+				}
+			}
+		}
+		function paint() {
+			sortLock = true;
+			var localBlocksWrapper = blocksWrapper;
+			var	distance = 0,
+				fontNode = null,
+				behindNode = null,
+				fontNode = null,
+				behindCloneNode = null,
+				fontCloneNode = null,
+				snapShot = null,
+				timer = null;
+			timer = setInterval(render,1000);
+			function render() {
+				//基于CSS的left属性来实现左右对换，同事进行相关的元素的删除(从而时间元素位置互换)
+				if(fontNode){
+					//实现元素互换
+					if (behindNode == fontNode) {
+						localBlocksWrapper.insertBefore(fontCloneNode,behindNode.nextElementSibling);	
+						localBlocksWrapper.removeChild(behindNode);
+					}else{
+						localBlocksWrapper.insertBefore(fontCloneNode,behindNode.nextElementSibling);
+						localBlocksWrapper.insertBefore(behindCloneNode,fontNode.nextElementSibling);
+						localBlocksWrapper.removeChild(behindNode);
+						localBlocksWrapper.removeChild(fontNode);
+					}
+				}
+				var domBlockArray = document.querySelectorAll("span");
+				//取出快照中保存的交换序列
+				snapShot = snapShots.shift();
+
+				//动画过度方块见得交换
+				fontNode = domBlockArray[snapShot["from"]];
+				behindNode = domBlockArray[snapShot["to"]];
+				distance = (snapShot["to"]-snapShot["from"])*15;
+				fontNode.setAttribute("class","block-light");
+				behindNode.setAttribute("class","block-light");
+				fontNode.style.left = distance+"px";
+
+				//实现元素的克隆
+				behindNode.style.left = "-"+distance+"px";
+				behindCloneNode = behindNode.cloneNode();
+				fontCloneNode = fontNode.cloneNode();
+				behindCloneNode.style.left = "0";
+				fontCloneNode.style.left = "0";
+				fontCloneNode.style.backgroundColor = "#9fe0f6";
+				behindCloneNode.setAttribute("class","");
+				fontCloneNode.setAttribute("class","");
+
+				//如果快照中没有了交换序列   退出 解锁
+				if (!snapShots[0]) {
+					clearInterval(timer);
+					sortLock = false;
+				}
+			}
+
+		}
+		function init() {
+			initDomEle();
+			initButtonEvent();
+		}
+		init();
+	</script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>JS-Task11</title>
+</head>
+<style>
+	.lev-1{
+		height: 100px;
+	}
+	.lev-2{
+		height: 80px;
+	}
+	.lev-3{
+		height: 60px;
+	}
+	.lev-4{
+		height: 40px;
+	}
+	.lev-5{
+		height: 20px;
+	}
+	div{
+		border: 1px solid #ccc;
+		display: flex;
+		justify-content: space-around;
+	    flex-grow: 1;
+	    align-items: center;
+	}
+	.Fish{
+		flex-grow: 1.7;
+	}
+</style>
+<body>
+	<div class="Super lev-1" id="topNode">Super
+		<div class="Car lev-2">Car
+			<div class="Apple lev-3">Apple
+				<div class="Pear lev-4">Pear</div>
+				<div class="pig lev-4">pig</div>
+				<div class="Cola lev-4">Cola</div>
+				<div class="Soccor lev-4">Soccor</div>
+			</div>
+			<div class="Phone lev-3">Phone</div>
+			<div class="None lev-3">None
+				<div class="Book lev-4">Book</div>
+				<div class="School lev-4">School</div>
+			</div>
+		</div>
+		<div class="Note lev-2">Note
+			<div class="Human lev-3">Human
+				<div class="Code lev-4">Code</div>
+				<div class="Operate lev-4">Operate</div>
+				<div class="Man lev-4">Man</div>
+			</div>
+			<div class="Program lev-3">Program
+				<div class="Boment lev-4">Boment
+					<div class="Cat lev-5">Cat</div>
+				</div>
+				<div class="Glass lev-4">Glass</div>
+			</div>
+		</div>
+		<div class="Fish lev-2">
+			Fish
+		</div>
+	</div>
+	<input type="button" value="深度优先" id="DFS">
+	<input type="button" value="广度优先" id="BFS">
+	<select name="sortRate" id="sortRate">
+		<option value="1000ms">1000ms</option>
+		<option value="500ms">500ms</option>
+		<option value="200ms">200ms</option>
+	</select>
+	<script type="text/javascript">
+		/*整体规划：先绑定  再遍历且后件渲染数组   再render
+		question: 使用栈模拟深度搜索
+		*/
+		var interval = 1000;
+		// var stack = []; /*咱们使用栈来模拟所谓的递归遍历*/
+		var renderArr = [];
+		var topNode = document.getElementById("topNode");
+		function btnEventBind() {
+			var dfsBtn = document.getElementById("DFS");
+			var bfsBtn = document.getElementById("BFS");
+			var rateSelect = document.getElementById("sortRate");
+			EventUtil.addHandler(rateSelect,"blur",function (event) {
+				var selectObj = event.target;
+				var text = selectObj.options[selectObj.selectedIndex].text;
+				if (interval+"" !== text) {
+					interval = parseInt(text);
+				}
+			});
+			EventUtil.addHandler(dfsBtn,"click",DFSearch);
+			EventUtil.addHandler(bfsBtn,"click",BFSearch);
+		}
+		function DFSearch() {
+			/*作者能力有限，暂时只能用递归了，以后定补上*/
+			renderArr = [];
+			DFS(topNode);
+			renderChange();
+		}
+		function DFS(node) {
+			if (node === null || node.id === "DFS") {
+				return;
+			}
+			renderArr.push(node);
+			DFS(node.firstElementChild);
+			DFS(node.nextElementSibling);
+		}
+		function BFSearch() {
+			//使用队列来模拟广度优先alog
+			var queue = [];
+			var visited = [];  //记录已访问数组  哈希
+			var point = null;
+			var pt2;
+			queue.push(topNode);
+			renderArr.push(topNode);
+			while(queue.length > 0){
+				point = queue.shift();
+				for(var w = point.firstElementChild; w!==null; w=w.nextElementSibling){
+					renderArr.push(w);
+					queue.push(w);
+				}
+			}
+			renderChange();
+		}
+		function renderChange() {
+			var lastRender = renderArr[0];
+			setTimeout(function () {
+				lastRender.style.backgroundColor = "#fff";
+				lastRender = renderArr.shift();
+				lastRender.style.backgroundColor = "#f28749";
+				if (renderArr[0]) {
+					setTimeout(arguments.callee,interval);
+				}else{
+					setTimeout(function () {
+						lastRender.style.backgroundColor = "#fff";
+					},interval);
+				}
+			},interval)
+		}
+		function init() {
+			btnEventBind();
+		}
+		var EventUtil = {
+		  addHandler: function (element, type, handler) {
+		    if(element.addEventListener){
+		      element.addEventListener(type,handler,false);
+		    }else if(element.attachEvent){
+		      element.attachEvent("on"+type, handler);
+		    }else{
+		      element["on"+type] = handler;
+		    }
+		  },
+		  removeHandler: function (element,type,handler) {
+		    if (element.removeEventListener) {
+		      element.removeEventListener(type,handler,false);
+		    } else if (element.detachEvent) {
+		      element.detachEvent("on"+type,handler);
+		    } else {
+		      element["on"+type] = null;
+		    }
+		  }
+		}
+		init();
+	</script>
+</body>
+</html>
